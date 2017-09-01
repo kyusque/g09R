@@ -37,9 +37,14 @@ read_g09output <- function(file){
   i <- 0
   while(TRUE){
     i <- i + 1
+    sep <- "\\\\"
     strings <- tail(raw, i * 10^3) %>% rawToChar %>% gsub("\\r", "", .) %>% strsplit("\n")
-    if(0 == length(start <- strings[[1]] %>% grep("1\\\\1\\\\",.)))
-      next()
+    if(0 == length(start <- strings[[1]] %>% grep("1\\\\1\\\\",.))){
+      if(0 == length(start <- strings[[1]] %>% grep("1\\|1\\|",.)))
+        next()
+      sep <- "\\|"
+    }
+
     end <- strings[[1]] %>% grep("@",.)
     sumstr <- strings[[1]][start:end] %>% paste(collapse = "") %>% gsub(" ", "", .)
     break()
@@ -47,8 +52,8 @@ read_g09output <- function(file){
 
   #organize the summary area
   temp <- sumstr %>%
-  {function(x) strsplit(x, "\\\\\\\\")[[1]]}() %>%
-    strsplit("\\\\")
+  {function(x) strsplit(x, paste0(sep, sep))[[1]]}() %>%
+    strsplit(sep)
 
   result <- list(Info = temp[[1]],
                  Root = temp[[2]],
